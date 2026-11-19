@@ -1,0 +1,55 @@
+{
+  "name": "rubicam-sitio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontend del sitio Rubicam: pruebas y análisis estático",
+  "scripts": {
+    "lint": "eslint assets/js components chat/rubicam-chat.js Panel/ws-adapter.js tests/js",
+    "test": "jest",
+    "test:cobertura": "jest --coverage",
+    "pruebas": "composer run cobertura && jest --coverage"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "jest-junit": "^17.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "roots": [
+      "<rootDir>/tests/js"
+    ],
+    "collectCoverageFrom": [
+      "assets/js/i18n.js",
+      "assets/js/main.js"
+    ],
+    "coverageDirectory": "build/coverage-js",
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "lcov",
+      "json-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "branches": 70,
+        "functions": 80,
+        "statements": 80
+      }
+    },
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "build",
+          "outputName": "junit-js.xml"
+        }
+      ]
+    ]
+  }
+}

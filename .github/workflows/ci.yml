@@ -1,0 +1,222 @@
+# ============================================================
+# Integración continua — Rubicam (sitio web + panel PHP)
+# Orden "fail fast": de lo más barato a lo más costoso.
+#   1. calidad  → instalación con caché, sintaxis PHP, ESLint, PHPStan   (~1 min)
+#   2. pruebas  → PHPUnit + Jest con cobertura y umbral (quality gate)  (~1 min)
+#   3. humo     → MySQL en contenedor + pruebas de humo (mini-staging)  (~1-2 min)
+#   4. notificar → comentario en el pull request con el resultado
+# ============================================================
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Si llega un push nuevo a la misma rama, se cancela la ejecución anterior (ahorra minutos)
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.3'
+  NODE_VERSION: '22'
+  COBERTURA_MIN_PHP: '80'   # umbral de cobertura de líneas PHP (ver docs/plan de subida)
+
+jobs:
+  calidad:
+    name: 1 · Instalación y análisis estático
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar PHP ${{ env.PHP_VERSION }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer
+
+      - name: Caché de dependencias PHP (Composer)
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
+
+      - name: Instalar Node ${{ env.NODE_VERSION }} (con caché npm)
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --no-audit --no-fund
+
+      - name: Sintaxis PHP (php -l)
+        run: |
+          errores=0; total=0
+          while IFS= read -r -d '' f; do
+            total=$((total + 1))
+            salida=$(php -l "$f" 2>&1) || { echo "::error file=$f::$salida"; errores=$((errores + 1)); }
+          done < <(find Panel chat tools tests -name '*.php' -print0)
+          echo "Archivos PHP revisados: $total · con errores: $errores"
+          [ "$errores" -eq 0 ]
+
+      - name: Análisis estático JavaScript (ESLint)
+        run: npm run lint
+
+      - name: Análisis estático PHP (PHPStan)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=512M --error-format=github
+
+  pruebas:
+    name: 2 · Pruebas y cobertura
+    needs: calidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: pcov
+          tools: composer
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --no-audit --no-fund
+
+      - name: Pruebas PHP (PHPUnit) con cobertura
+        run: vendor/bin/phpunit --coverage-clover build/coverage/clover.xml --coverage-html build/coverage/html --coverage-text --colors=never
+
+      - name: Umbral de cobertura PHP (≥ ${{ env.COBERTURA_MIN_PHP }} %)
+        run: php tools/cobertura-minima.php build/coverage/clover.xml "$COBERTURA_MIN_PHP"
+
+      - name: Pruebas JavaScript (Jest) con cobertura y umbral
+        run: npm run test:cobertura
+
+      - name: Resumen de cobertura JS
+        if: always()
+        run: |
+          if [ -f build/coverage-js/coverage-summary.json ]; then
+            node -e "const s=require('./build/coverage-js/coverage-summary.json').total; console.log('### Cobertura JS: **'+s.lines.pct+' %** de líneas (mínimo 80 %)')" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publicar reportes como artefacto
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reportes-pruebas-${{ github.run_number }}
+          path: |
+            build/coverage/
+            build/coverage-js/
+            build/junit-php.xml
+            build/junit-js.xml
+          retention-days: 14
+          if-no-files-found: warn
+
+  humo:
+    name: 3 · Pruebas de humo (MySQL en contenedor)
+    needs: pruebas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Secretos de GitHub (Settings → Secrets and variables → Actions).
+      # Si no existen, se genera una clave aleatoria para esta ejecución.
+      DB_CLAVE: ${{ secrets.DB_CLAVE_CI }}
+      ADMIN_CLAVE: ${{ secrets.ADMIN_CLAVE_STAGING }}
+      DB_HOST: 127.0.0.1
+      DB_NOMBRE: rubicam_db
+      DB_USUARIO: root
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, mbstring
+          coverage: none
+
+      - name: Preparar claves (secretos o aleatorias, siempre ocultas en el log)
+        run: |
+          if [ -z "$DB_CLAVE" ]; then DB_CLAVE=$(openssl rand -hex 16); fi
+          if [ -z "$ADMIN_CLAVE" ]; then ADMIN_CLAVE=$(openssl rand -hex 16); fi
+          echo "::add-mask::$DB_CLAVE"; echo "::add-mask::$ADMIN_CLAVE"
+          echo "DB_CLAVE=$DB_CLAVE" >> "$GITHUB_ENV"
+          echo "ADMIN_CLAVE=$ADMIN_CLAVE" >> "$GITHUB_ENV"
+
+      - name: Levantar MySQL 8.4 en contenedor
+        run: |
+          docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD="$DB_CLAVE" mysql:8.4
+          for i in $(seq 1 60); do
+            docker exec mysql mysqladmin ping -uroot -p"$DB_CLAVE" --silent 2>/dev/null && break
+            sleep 2
+          done
+          docker exec mysql mysqladmin ping -uroot -p"$DB_CLAVE" --silent
+
+      - name: Importar esquema y datos de prueba (sin datos reales)
+        run: |
+          docker exec -i mysql mysql -uroot -p"$DB_CLAVE" < Panel/sql/rubicam_db.sql
+          docker exec -i mysql mysql -uroot -p"$DB_CLAVE" < Panel/sql/dashboard_modulos.sql
+          HASH=$(php -r 'echo password_hash(getenv("ADMIN_CLAVE"), PASSWORD_DEFAULT);')
+          docker exec mysql mysql -uroot -p"$DB_CLAVE" rubicam_db -e "UPDATE usuarios SET password_hash='$HASH' WHERE usuario='admin'"
+
+      - name: Iniciar el sitio (servidor PHP)
+        run: |
+          php -S 127.0.0.1:8080 -t . > /tmp/servidor.log 2>&1 &
+          sleep 2
+
+      - name: Ejecutar pruebas de humo
+        run: bash tests/humo/humo.sh http://127.0.0.1:8080
+
+      - name: Log del servidor (si falla)
+        if: failure()
+        run: tail -50 /tmp/servidor.log
+
+  notificar:
+    name: 4 · Notificar en el pull request
+    needs: [calidad, pruebas, humo]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const r = {
+              calidad: '${{ needs.calidad.result }}',
+              pruebas: '${{ needs.pruebas.result }}',
+              humo: '${{ needs.humo.result }}',
+            };
+            const icono = (x) => ({ success: '✅', failure: '❌', cancelled: '⚪', skipped: '⏭️' }[x] || '❔');
+            const ok = Object.values(r).every((x) => x === 'success');
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `## ${ok ? '✅ CI en verde' : '❌ CI falló'} — ejecución #${context.runNumber}`,
+              '',
+              '| Etapa | Resultado |', '|---|---|',
+              `| 1 · Instalación y análisis estático | ${icono(r.calidad)} ${r.calidad} |`,
+              `| 2 · Pruebas y cobertura | ${icono(r.pruebas)} ${r.pruebas} |`,
+              `| 3 · Pruebas de humo (MySQL) | ${icono(r.humo)} ${r.humo} |`,
+              '', `[Ver detalle y descargar reportes](${url})`,
+            ].join('\n');
+            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });

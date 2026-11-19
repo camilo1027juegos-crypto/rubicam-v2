@@ -234,3 +234,7 @@ function applyLang(lang){
   };
   lsSet('rubicam_lang', lang);
 }
+/* Exportación solo para las pruebas automáticas (Node/Jest). En el navegador no hace nada. */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { I18N, applyLang, getLang, lsGet, lsSet };
+}

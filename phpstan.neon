@@ -1,0 +1,9 @@
+# Nivel inicial 0 (clases, funciones y llamadas inexistentes). Plan: subir a 5 en el sprint S2.
+parameters:
+    level: 0
+    paths:
+        - Panel
+        - chat
+        - tools
+    excludePaths:
+        - chat/_cache

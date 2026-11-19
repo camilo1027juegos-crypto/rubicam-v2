@@ -1,5 +1,7 @@
 # Rubicam — Sitio web (agencia de aduanas)
 
+[![CI](https://github.com/camilo1027juegos-crypto/rubicam-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/camilo1027juegos-crypto/rubicam-v2/actions/workflows/ci.yml)
+
 Prototipo de sitio web multipágina para **Rubicam**, construido con **HTML, CSS y JavaScript puro** (sin frameworks). Diseño basado en el sistema visual "Orderful" (monocromático con un único acento vermellón `#e42b0c`).
 
 Idiomas: **Español (por defecto), Inglés y Alemán**, con selector funcional que recuerda la elección.
@@ -15,6 +17,26 @@ Idiomas: **Español (por defecto), Inglés y Alemán**, con selector funcional q
 > Las rutas son **relativas** y cada página tiene una etiqueta `<base href>` que apunta a la raíz del proyecto. Por eso el sitio funciona desde cualquier carpeta, por doble clic o por servidor.
 >
 > Nota: con conexión a internet la tipografía Inter se carga desde Google Fonts. Sin conexión, el navegador usa una fuente de sistema parecida.
+
+---
+
+## 🔁 Integración continua (GitHub Actions)
+
+Cada *push* a `main` o `develop` y cada *pull request* ejecuta `.github/workflows/ci.yml`:
+
+| Etapa | Qué hace | Falla si… |
+|---|---|---|
+| 1 · Instalación y análisis estático | Composer + npm (con caché), `php -l`, ESLint, PHPStan | hay errores de sintaxis o de análisis |
+| 2 · Pruebas y cobertura | PHPUnit + Jest, umbral de cobertura, reportes como artefacto | una prueba falla o la cobertura baja del umbral (PHP 80 %, JS 80 %) |
+| 3 · Pruebas de humo | MySQL 8.4 en contenedor, importa el esquema y prueba login, permisos y API | una verificación de humo falla |
+| 4 · Notificar | Comenta el resultado en el *pull request* | — |
+
+**Comando único de pruebas (local):** `npm run pruebas`  (requiere `composer install` y `npm ci`).
+
+**Claves:** nunca van en el código. Copie `.env.example` como `.env` (local) o defina los secretos
+`DB_CLAVE_CI` y `ADMIN_CLAVE_STAGING` en *Settings → Secrets and variables → Actions*.
+
+Más detalle en [`docs/PLAN_DE_PRUEBAS.md`](docs/PLAN_DE_PRUEBAS.md).
 
 ---
 

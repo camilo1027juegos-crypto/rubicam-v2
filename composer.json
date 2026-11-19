@@ -1,0 +1,27 @@
+{
+    "name": "rubicam/sitio",
+    "description": "Sitio web y panel interno de Rubicam (agencia de aduanas)",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "phpstan/phpstan": "^2.1"
+    },
+    "scripts": {
+        "lint": "find Panel chat tools -name '*.php' -print0 | xargs -0 -n1 php -l",
+        "analisis": "phpstan analyse --no-progress --memory-limit=512M",
+        "test": "phpunit",
+        "cobertura": [
+            "phpunit --coverage-clover build/coverage/clover.xml --coverage-html build/coverage/html --coverage-text",
+            "php tools/cobertura-minima.php build/coverage/clover.xml 80"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

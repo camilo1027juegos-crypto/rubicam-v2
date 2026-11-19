@@ -66,3 +66,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const form = document.getElementById('contactForm');
   if(form) form.addEventListener('submit', submitForm);
 });
+
+/* Exportación solo para las pruebas automáticas (Node/Jest). En el navegador no hace nada. */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { toast, newsSoon, submitForm, openCookie, acceptCookies };
+}
