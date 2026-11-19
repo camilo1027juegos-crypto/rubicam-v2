@@ -122,3 +122,5 @@ Esto es el **diseño/frontend**. Falta la parte de servidor:
 ---
 
 © 2026 Rubicam. Prototipo de diseño.
+
+> Historial de ejecuciones y reportes de cobertura: pestaña **Actions** del repositorio.
