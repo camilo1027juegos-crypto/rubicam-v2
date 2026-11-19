@@ -1,0 +1,32 @@
+{
+  "_comentario": "Estructura del menú como datos. Opcional: útil si en el futuro quieres generar el menú dinámicamente o alimentar un buscador.",
+  "menu": [
+    { "label_key": "nav.home", "href": "index.html" },
+    {
+      "label_key": "nav.about",
+      "href": "pages/nosotros.html",
+      "children": [
+        { "label_key": "about.origin", "href": "pages/nosotros.html#origen" },
+        { "label_key": "about.level",  "href": "pages/nosotros.html#nivel" },
+        { "label_key": "about.team",   "href": "pages/nosotros.html#equipo" },
+        { "label_key": "about.why",    "href": "pages/nosotros.html#porque" },
+        { "label_key": "about.goals",  "href": "pages/nosotros.html#objetivos" }
+      ]
+    },
+    {
+      "label_key": "nav.services",
+      "href": "pages/servicios.html",
+      "children": [
+        { "label_key": "svc.import.t", "href": "pages/servicios.html#s-import" },
+        { "label_key": "svc.export.t", "href": "pages/servicios.html#s-export" },
+        { "label_key": "svc.clas.t",   "href": "pages/servicios.html#s-clas" },
+        { "label_key": "svc.advice.t", "href": "pages/servicios.html#s-asesoria" },
+        { "label_key": "svc.fx.t",     "href": "pages/servicios.html#s-cambio" },
+        { "label_key": "svc.log.t",    "href": "pages/servicios.html#s-log" }
+      ]
+    },
+    { "label_key": "nav.news",    "href": "pages/noticias.html" },
+    { "label_key": "nav.contact", "href": "pages/contacto.html" }
+  ],
+  "idiomas": ["es", "en", "de"]
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base href="../">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contáctanos — Rubicam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/reset.css">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/header.css">
+<link rel="stylesheet" href="assets/css/footer.css">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<div id="header"></div>
+
+<main>
+  <div class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="nav.contact">Contáctanos</div>
+      <h1 class="h-lg" data-i18n="contact.hero.t">Hablemos de su operación</h1>
+      <p class="lede" data-i18n="contact.hero.d">Déjenos los datos de su carga y un asesor le responde con una cotización clara en menos de 24 horas.</p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding-top:48px;padding-bottom:64px">
+    <div class="contact-grid">
+      <form id="contactForm">
+        <div class="form-field">
+          <label data-i18n="form.name">Nombre completo</label>
+          <input type="text" name="nombre" required>
+        </div>
+        <div class="form-field">
+          <label data-i18n="form.company">Empresa</label>
+          <input type="text" name="empresa">
+        </div>
+        <div class="form-field">
+          <label data-i18n="form.email">Correo electrónico</label>
+          <input type="email" name="email" required>
+        </div>
+        <div class="form-field">
+          <label data-i18n="form.type">Tipo de operación</label>
+          <select name="tipo">
+            <option data-i18n="form.type.import">Importación</option>
+            <option data-i18n="form.type.export">Exportación</option>
+            <option data-i18n="form.type.advice">Asesoría</option>
+            <option data-i18n="form.type.other">Otro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label data-i18n="form.msg">Cuéntenos sobre su carga</label>
+          <textarea name="mensaje"></textarea>
+        </div>
+
+        <!-- Dos casillas SEPARADAS (requisito legalidad #4) -->
+        <div class="consent">
+          <input type="checkbox" id="cTerms" required>
+          <label for="cTerms"><span data-i18n="form.terms.1">Acepto los</span> <a href="pages/legal/terminos.html" data-i18n="legal.terms">términos y condiciones</a>.</label>
+        </div>
+        <div class="consent">
+          <input type="checkbox" id="cPriv" required>
+          <label for="cPriv"><span data-i18n="form.terms.2">He leído y acepto la</span> <a href="pages/legal/privacidad.html" data-i18n="legal.privacy">política de privacidad</a> <span data-i18n="form.terms.3">y el tratamiento de mis datos</span>.</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:12px"><span data-i18n="form.submit">Enviar solicitud</span> <span class="arr">→</span></button>
+        <p class="form-note" data-i18n="form.note">Registramos la fecha, hora y versión de las políticas que usted acepta.</p>
+      </form>
+
+      <div class="contact-info">
+        <div class="item">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><b data-i18n="contact.addr.t">Oficina principal</b><span data-i18n="contact.addr.d">Terminal de carga · Bogotá, Colombia</span></div>
+        </div>
+        <div class="item">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+          <div><b data-i18n="contact.phone.t">Teléfono</b><span>+57 601 000 0000</span></div>
+        </div>
+        <div class="item">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+          <div><b data-i18n="contact.mail.t">Correo</b><span>operaciones@rubicam.co</span></div>
+        </div>
+        <div class="item">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><b data-i18n="contact.hours.t">Horario</b><span data-i18n="contact.hours.d">Lun a Vie · 8:00 – 18:00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="footer"></div>
+<div class="toast" id="toast"></div>
+
+<script src="components/header.js"></script>
+<script src="components/footer.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/menu.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

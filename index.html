@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base href="./">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rubicam — Agencia de Aduanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/reset.css">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/header.css">
+<link rel="stylesheet" href="assets/css/footer.css">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<script src="chat/rubicam-chat.js" defer></script>
+<body>
+<div id="header"></div>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-card">
+        <div class="hero-left">
+          <div class="eyebrow" data-i18n="home.eyebrow">Agencia de aduanas · Nivel 1 DIAN</div>
+          <h1 class="display" data-i18n="home.title">Su carga, despachada sin fricción.</h1>
+          <p class="lede" data-i18n="home.lede">Gestionamos importaciones y exportaciones de principio a fin: clasificación arancelaria, trámite ante la DIAN, cumplimiento cambiario y logística, con trazabilidad total.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="pages/contacto.html"><span data-i18n="home.cta1">Solicitar cotización</span> <span class="arr">→</span></a>
+            <a class="btn btn-ghost" href="pages/servicios.html" data-i18n="home.cta2">Ver servicios</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="tile">
+            <div class="tile-panel">
+              <div class="row"><span data-i18n="tile.op">Operación · IMPO-2024-0192</span><span class="dot"></span></div>
+              <div class="row"><span class="muted" data-i18n="tile.port">Puerto</span><span>Cartagena</span></div>
+              <div class="row"><span class="muted" data-i18n="tile.channel">Canal</span><span style="color:var(--color-vermillion)">● <span data-i18n="tile.green">Verde</span></span></div>
+              <div class="row"><span class="muted" data-i18n="tile.status">Estado</span><span data-i18n="tile.cleared">Levante autorizado</span></div>
+            </div>
+            <div class="tile-grid">
+              <div class="cell">DIAN</div><div class="cell">VUCE</div><div class="cell">ICA</div>
+              <div class="cell">INVIMA</div><div class="cell">MUISCA</div><div class="cell">SIA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="home.trust">Confían en nuestra operación</p>
+    
+    <div class="logos-marquee">
+  <div class="logos-track">
+    <!-- Grupo 1 de logos -->
+    <img src="assets/img/empresas-logo/ada.png" alt="ADA">
+    <img src="assets/img/empresas-logo/calidex.png" alt="Calidex">
+    <img src="assets/img/empresas-logo/CIMSE.png" alt="CIMSE">
+    <!-- Repetimos una vez para que llene bien el ancho de la pantalla -->
+    <img src="assets/img/empresas-logo/ada.png" alt="ADA">
+    <img src="assets/img/empresas-logo/calidex.png" alt="Calidex">
+    <img src="assets/img/empresas-logo/CIMSE.png" alt="CIMSE">
+
+    <!-- Grupo 2 (copia exacta del Grupo 1 para el bucle infinito) -->
+    <img src="assets/img/empresas-logo/ada.png" alt="ADA" aria-hidden="true">
+    <img src="assets/img/empresas-logo/calidex.png" alt="Calidex" aria-hidden="true">
+    <img src="assets/img/empresas-logo/CIMSE.png" alt="CIMSE" aria-hidden="true">
+    <img src="assets/img/empresas-logo/ada.png" alt="ADA" aria-hidden="true">
+    <img src="assets/img/empresas-logo/calidex.png" alt="Calidex" aria-hidden="true">
+    <img src="assets/img/empresas-logo/CIMSE.png" alt="CIMSE" aria-hidden="true">
+  </div>
+</div>
+  </div>
+</section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow" data-i18n="feat.eyebrow">Qué hacemos</div>
+        <h2 class="h" data-i18n="feat.title">Una agencia, toda la cadena</h2>
+        <p class="lede" data-i18n="feat.lede">Cubrimos cada etapa del comercio exterior para que usted se concentre en su negocio, no en los trámites.</p>
+      </div>
+      <div class="grid-3">
+        <a class="card" href="pages/servicios.html#s-import">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg></div>
+          <h3 data-i18n="feat.1.t">Importación y exportación</h3>
+          <p data-i18n="feat.1.d">Trámite completo ante la DIAN, elaboración de declaraciones y acompañamiento en inspección física o documental.</p>
+          <span class="more" data-i18n="more">Saber más →</span>
+        </a>
+        <a class="card" href="pages/servicios.html#s-clas">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+          <h3 data-i18n="feat.2.t">Clasificación arancelaria</h3>
+          <p data-i18n="feat.2.d">Determinamos la subpartida correcta para evitar sobrecostos, sanciones y demoras en el levante de su mercancía.</p>
+          <span class="more" data-i18n="more">Saber más →</span>
+        </a>
+        <a class="card" href="pages/servicios.html#s-cambio">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <h3 data-i18n="feat.3.t">Cumplimiento cambiario</h3>
+          <p data-i18n="feat.3.d">Declaraciones de cambio y reportes ante el Banco de la República, con el respaldo normativo que su operación exige.</p>
+          <span class="more" data-i18n="more">Saber más →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="wrap">
+      <div class="stat"><div class="num">+25</div><div class="lbl" data-i18n="stat.1">Años de experiencia</div></div>
+      <div class="stat"><div class="num">98%</div><div class="lbl" data-i18n="stat.2">Levantes sin observación</div></div>
+      <div class="stat"><div class="num">+40</div><div class="lbl" data-i18n="stat.3">Países de origen y destino</div></div>
+      <div class="stat"><div class="num">24h</div><div class="lbl" data-i18n="stat.4">Tiempo medio de respuesta</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <div class="eyebrow" data-i18n="why.eyebrow">Por qué Rubicam</div>
+          <h2 class="h" data-i18n="why.title">Responsabilidad que respalda cada declaración</h2>
+          <p class="lede" data-i18n="why.lede">Como agencia de aduanas autorizada, respondemos técnicamente por cada trámite. Esa responsabilidad se traduce en rigor, no en burocracia.</p>
+          <ul class="list-check">
+            <li><span class="mk">✳</span><span data-i18n="why.1">Autorización vigente DIAN y operador de confianza</span></li>
+            <li><span class="mk">✳</span><span data-i18n="why.2">Un coordinador asignado por cuenta, no un call center</span></li>
+            <li><span class="mk">✳</span><span data-i18n="why.3">Trazabilidad en línea del estado de cada operación</span></li>
+            <li><span class="mk">✳</span><span data-i18n="why.4">Pólizas de cumplimiento y manejo de información</span></li>
+          </ul>
+        </div>
+        <div class="visual-block dark">
+          <div class="eyebrow" style="color:var(--mist);margin-bottom:20px" data-i18n="why.panel.eyebrow">Tablero de operación</div>
+          <div class="vrow"><span class="muted" data-i18n="why.panel.1">Declaraciones este mes</span><b>1.284</b></div>
+          <div class="vrow"><span class="muted" data-i18n="why.panel.2">En inspección</span><b>7</b></div>
+          <div class="vrow"><span class="muted" data-i18n="why.panel.3">Levante autorizado</span><b style="color:var(--color-vermillion)">1.271</b></div>
+          <div class="vrow"><span class="muted" data-i18n="why.panel.4">SLA cumplido</span><b>99,4%</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section>
+    <div class="wrap">
+      <div class="cta">
+        <div class="cta-inner">
+          <h2 class="h" data-i18n="cta.title">¿Tiene una carga por nacionalizar?</h2>
+          <p data-i18n="cta.lede">Cuéntenos su operación y le enviamos una cotización clara, sin letra menuda, en menos de 24 horas.</p>
+          <a class="btn btn-primary" href="pages/contacto.html"><span data-i18n="cta.btn">Hablar con un asesor</span> <span class="arr">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="footer"></div>
+<div class="toast" id="toast"></div>
+
+<script src="components/header.js"></script>
+<script src="components/footer.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/menu.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

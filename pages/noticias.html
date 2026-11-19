@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base href="../">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noticias — Rubicam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/reset.css">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/header.css">
+<link rel="stylesheet" href="assets/css/footer.css">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<div id="header"></div>
+
+<main>
+  <div class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="nav.news">Noticias</div>
+      <h1 class="h-lg" data-i18n="news.hero.t">Normativa y comercio exterior, al día</h1>
+      <p class="lede" data-i18n="news.hero.d">Cambios en la regulación aduanera, calendarios y consejos prácticos para que su operación nunca se tome por sorpresa.</p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding-top:48px;padding-bottom:64px">
+    <div class="news-grid">
+      <article class="post" onclick="newsSoon()">
+        <div class="thumb" data-i18n="news.img">Imagen del artículo</div>
+        <div class="body">
+          <span class="tag" data-i18n="news.1.tag">Regulación</span>
+          <h3 data-i18n="news.1.t">Nuevos controles para la importación de textiles en 2026</h3>
+          <p data-i18n="news.1.d">Qué cambia en los requisitos de etiquetado y cómo prepararse para evitar retenciones en puerto.</p>
+          <div class="meta" data-i18n="news.1.m">12 ene 2026 · 4 min de lectura</div>
+        </div>
+      </article>
+      <article class="post" onclick="newsSoon()">
+        <div class="thumb" data-i18n="news.img">Imagen del artículo</div>
+        <div class="body">
+          <span class="tag" data-i18n="news.2.tag">Guía práctica</span>
+          <h3 data-i18n="news.2.t">Cómo leer el semáforo de la DIAN sin entrar en pánico</h3>
+          <p data-i18n="news.2.d">Rojo, amarillo o verde: qué significa cada canal y qué debe tener listo en cada caso.</p>
+          <div class="meta" data-i18n="news.2.m">3 dic 2025 · 6 min de lectura</div>
+        </div>
+      </article>
+      <article class="post" onclick="newsSoon()">
+        <div class="thumb" data-i18n="news.img">Imagen del artículo</div>
+        <div class="body">
+          <span class="tag" data-i18n="news.3.tag">Comercio</span>
+          <h3 data-i18n="news.3.t">Aprovechar los TLC: preferencias que muchos dejan sobre la mesa</h3>
+          <p data-i18n="news.3.d">Un certificado de origen bien gestionado puede ahorrarle miles en aranceles. Le explicamos cómo.</p>
+          <div class="meta" data-i18n="news.3.m">18 nov 2025 · 5 min de lectura</div>
+        </div>
+      </article>
+    </div>
+  </div>
+</main>
+
+<div id="footer"></div>
+<div class="toast" id="toast"></div>
+
+<script src="components/header.js"></script>
+<script src="components/footer.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/menu.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
