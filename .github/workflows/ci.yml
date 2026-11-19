@@ -166,18 +166,23 @@ jobs:
       - name: Levantar MySQL 8.4 en contenedor
         run: |
           docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD="$DB_CLAVE" mysql:8.4
-          for i in $(seq 1 60); do
-            docker exec mysql mysqladmin ping -uroot -p"$DB_CLAVE" --silent 2>/dev/null && break
+          # Al iniciar, la imagen levanta un servidor TEMPORAL sin red y luego se reinicia.
+          # "mysqladmin ping" responde también con ese temporal, así que se espera a que
+          # el servidor definitivo acepte la clave real por TCP (127.0.0.1).
+          for i in $(seq 1 90); do
+            if docker exec mysql mysql -h127.0.0.1 -uroot -p"$DB_CLAVE" -e 'SELECT 1' >/dev/null 2>&1; then
+              echo "MySQL listo tras $((i * 2)) s"; break
+            fi
             sleep 2
           done
-          docker exec mysql mysqladmin ping -uroot -p"$DB_CLAVE" --silent
+          docker exec mysql mysql -h127.0.0.1 -uroot -p"$DB_CLAVE" -e 'SELECT VERSION()'
 
       - name: Importar esquema y datos de prueba (sin datos reales)
         run: |
-          docker exec -i mysql mysql -uroot -p"$DB_CLAVE" < Panel/sql/rubicam_db.sql
-          docker exec -i mysql mysql -uroot -p"$DB_CLAVE" < Panel/sql/dashboard_modulos.sql
+          docker exec -i mysql mysql -h127.0.0.1 -uroot -p"$DB_CLAVE" < Panel/sql/rubicam_db.sql
+          docker exec -i mysql mysql -h127.0.0.1 -uroot -p"$DB_CLAVE" < Panel/sql/dashboard_modulos.sql
           HASH=$(php -r 'echo password_hash(getenv("ADMIN_CLAVE"), PASSWORD_DEFAULT);')
-          docker exec mysql mysql -uroot -p"$DB_CLAVE" rubicam_db -e "UPDATE usuarios SET password_hash='$HASH' WHERE usuario='admin'"
+          docker exec mysql mysql -h127.0.0.1 -uroot -p"$DB_CLAVE" rubicam_db -e "UPDATE usuarios SET password_hash='$HASH' WHERE usuario='admin'"
 
       - name: Iniciar el sitio (servidor PHP)
         run: |
@@ -189,7 +194,9 @@ jobs:
 
       - name: Log del servidor (si falla)
         if: failure()
-        run: tail -50 /tmp/servidor.log
+        run: |
+          docker logs mysql 2>&1 | tail -20
+          tail -50 /tmp/servidor.log 2>/dev/null || echo "(el servidor PHP no llegó a iniciar)"
 
   notificar:
     name: 4 · Notificar en el pull request
