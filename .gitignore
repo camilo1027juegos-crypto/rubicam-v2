@@ -1,3 +1,19 @@
+# Dependencias (se instalan en CI con caché)
+/vendor/
+/node_modules/
+
+# Reportes generados por el pipeline
+/build/
+/coverage/
+.phpunit.cache/
+
+# Configuración local con claves: NUNCA se sube
+.env
+
+# Datos de visitantes generados en tiempo de ejecución (IPs, contactos)
 chat/_cache/*
 !chat/_cache/.htaccess
+Panel/uploads/
+
+# Copias comprimidas
 *.zip

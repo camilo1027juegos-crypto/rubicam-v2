@@ -10,14 +10,7 @@ function cargar_permisos(int $usuario_id): array {
     global $pdo;
     $st = $pdo->prepare('SELECT seccion, puede_ver, puede_editar FROM permisos WHERE usuario_id = ?');
     $st->execute([$usuario_id]);
-    $map = [];
-    foreach ($st as $r) {
-        $map[$r['seccion']] = [
-            'ver'    => (bool)$r['puede_ver'],
-            'editar' => (bool)$r['puede_editar'],
-        ];
-    }
-    return $map;
+    return mapa_permisos($st);
 }
 
 /* Permisos del usuario con sesión activa (se calcula una vez) */
@@ -31,15 +24,11 @@ function permisos_actual(): array {
 }
 
 function puede_ver(string $seccion): bool {
-    if (es_admin()) return true;
-    $p = permisos_actual();
-    return !empty($p[$seccion]['ver']);
+    return permiso_permitido(es_admin(), permisos_actual(), $seccion, 'ver');
 }
 
 function puede_editar(string $seccion): bool {
-    if (es_admin()) return true;
-    $p = permisos_actual();
-    return !empty($p[$seccion]['editar']);
+    return permiso_permitido(es_admin(), permisos_actual(), $seccion, 'editar');
 }
 
 /* Lista de secciones con permiso de ver (claves), para el dashboard */

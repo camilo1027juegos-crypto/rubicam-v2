@@ -10,6 +10,7 @@
    ============================================================ */
 require __DIR__ . '/includes/permisos.php';
 require __DIR__ . '/config/ws_schema.php';
+require __DIR__ . '/includes/ws-mapeo.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -23,23 +24,7 @@ $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $op  = $in['op']  ?? '';
 $col = $in['col'] ?? '';
 
-/* --- Convierte una fila de la BD al documento que espera el dashboard --- */
-function fila_a_doc(array $r, array $def): array {
-    $doc = [];
-    if (!empty($r['extra'])) {
-        $x = json_decode($r['extra'], true);
-        if (is_array($x)) $doc = $x;
-    }
-    foreach ($def['cols'] as $name => $type) {
-        $v = $r[$name] ?? null;
-        if ($type === 'b')      $doc[$name] = (bool)$v;
-        elseif ($v === null)    { /* se omite para dejar el documento limpio */ }
-        elseif ($type === 'i')  $doc[$name] = (int)$v;
-        else                    $doc[$name] = (string)$v;
-    }
-    unset($doc['id']);
-    return $doc;
-}
+/* fila_a_doc() y doc_a_fila() están en includes/ws-mapeo.php */
 
 /* --- Lee una colección (si el usuario tiene permiso de ver) --- */
 function leer_coleccion(string $col, array $def): array {
@@ -84,23 +69,11 @@ if ($op === 'set' || $op === 'delete') {
             salir(['ok'=>true]);
         }
         // set: separar columnas conocidas del resto (que va a "extra")
-        $data   = is_array($in['data'] ?? null) ? $in['data'] : [];
-        $extra  = $data;
-        $campos = ['id']; $marcas = ['?']; $vals = [$id];
-        foreach ($def['cols'] as $name => $type) {
-            unset($extra[$name]);
-            $v = $data[$name] ?? null;
-            if ($type === 'b')       $v = !empty($v) ? 1 : 0;
-            elseif ($type === 'i')   $v = ($v === null || $v === '') ? null : (int)$v;
-            else                     $v = ($v === null) ? null : (string)$v;
-            $campos[] = $name; $marcas[] = '?'; $vals[] = $v;
-        }
-        unset($extra['id']);
-        $campos[] = 'extra'; $marcas[] = '?';
-        $vals[] = $extra ? json_encode($extra, JSON_UNESCAPED_UNICODE) : null;
-
-        $sql = "REPLACE INTO {$def['tabla']} (" . implode(',', $campos) . ") VALUES (" . implode(',', $marcas) . ")";
-        $pdo->prepare($sql)->execute($vals);
+        $data = is_array($in['data'] ?? null) ? $in['data'] : [];
+        $fila = doc_a_fila($id, $data, $def);
+        $marcas = implode(',', array_fill(0, count($fila['campos']), '?'));
+        $sql = "REPLACE INTO {$def['tabla']} (" . implode(',', $fila['campos']) . ") VALUES ($marcas)";
+        $pdo->prepare($sql)->execute($fila['valores']);
         salir(['ok'=>true]);
     } catch (PDOException $e) {
         salir(['ok'=>false, 'code'=>'unavailable', 'error'=>'Error de base de datos: ' . $e->getMessage()], 500);

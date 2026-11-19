@@ -16,16 +16,17 @@
 require __DIR__ . '/includes/auth.php';
 header('Content-Type: application/json; charset=utf-8');
 
-/* ==================== CONFIGURACIÓN (edita aquí) ==================== */
-const N8N_URL        = 'http://localhost:5678/webhook/asistente-rubicam';       // flujo ACTIVO
-const N8N_URL_TEST   = 'http://localhost:5678/webhook-test/asistente-rubicam';  // modo "Execute workflow"
-const N8N_USAR_TEST  = true;                       // true solo mientras pruebas en el editor de n8n
-const N8N_CLAVE      = 'CAMBIA_ESTA_CLAVE_COMPARTIDA';   // la MISMA que pusiste en el nodo "Preparar contexto"
+/* ==================== CONFIGURACIÓN ==================== */
+/* URLs y claves desde variables de entorno (ver .env.example). Nunca escriba claves aquí. */
+define('N8N_URL',       env('N8N_URL_PANEL', 'http://localhost:5678/webhook/asistente-rubicam'));       // flujo ACTIVO
+define('N8N_URL_TEST',  env('N8N_URL_PANEL_TEST', 'http://localhost:5678/webhook-test/asistente-rubicam'));  // modo "Execute workflow"
+define('N8N_USAR_TEST', env_bool('N8N_USAR_TEST', true));   // true solo mientras pruebas en el editor de n8n
+define('N8N_CLAVE',     env('N8N_CLAVE_PANEL', ''));         // la MISMA que pusiste en el nodo "Preparar contexto"
 const N8N_TIMEOUT    = 120;                         // segundos
-const DB_HOST        = '127.0.0.1';
-const DB_NAME        = 'rubicam_db';
-const DB_USER        = 'root';
-const DB_PASS        = '';
+define('DB_HOST', env('DB_HOST', '127.0.0.1'));
+define('DB_NAME', env('DB_NOMBRE', 'rubicam_db'));
+define('DB_USER', env('DB_USUARIO', 'root'));
+define('DB_PASS', env('DB_CLAVE', ''));
 const MAX_ARCHIVO_MB = 10;                          // por archivo
 const MAX_TOTAL_MB   = 15;                          // por mensaje
 const CARPETA_ADJ    = __DIR__ . '/uploads/chat';

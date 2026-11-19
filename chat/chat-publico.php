@@ -15,10 +15,16 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
-/* ==================== CONFIGURACIÓN (edita aquí) ==================== */
-const N8N_URL        = 'http://localhost:5678/webhook/chat-publico-rubicam';
-const N8N_URL_TEST   = 'http://localhost:5678/webhook-test/chat-publico-rubicam';
-const N8N_USAR_TEST  = true;const N8N_CLAVE      = 'CAMBIA_CLAVE_PUBLICA';     // la MISMA que en el nodo "Preparar contexto" del flujo público
+require_once __DIR__ . '/../Panel/config/env.php';
+require_once __DIR__ . '/lib/chat-funciones.php';
+
+/* ==================== CONFIGURACIÓN ==================== */
+/* Las URLs y claves se leen de variables de entorno (ver .env.example).
+   Nunca escriba claves aquí: este archivo está en el repositorio.        */
+define('N8N_URL',       env('N8N_URL_PUBLICO', 'http://localhost:5678/webhook/chat-publico-rubicam'));
+define('N8N_URL_TEST',  env('N8N_URL_PUBLICO_TEST', 'http://localhost:5678/webhook-test/chat-publico-rubicam'));
+define('N8N_USAR_TEST', env_bool('N8N_USAR_TEST', true));
+define('N8N_CLAVE',     env('N8N_CLAVE_PUBLICA', ''));   // la MISMA que en el nodo "Preparar contexto" del flujo público
 const N8N_TIMEOUT    = 60;
 
 // Límites (protegen la cuota de Gemini y evitan abuso)
@@ -33,14 +39,14 @@ const MAX_HISTORIAL  = 6;
 const KB_ARCHIVO     = __DIR__ . '/base-conocimiento.md';
 const CACHE_DIR      = __DIR__ . '/_cache';
 
-// Formulario de contacto -> base de datos (ver web_leads.sql)
+// Formulario de contacto -> base de datos (tabla web_leads)
 const GUARDAR_BD     = true;
 const AVISO_EN_PANEL = true;    // crea un aviso en el Inicio del panel por cada contacto nuevo
-const DB_HOST        = '127.0.0.1';
-const DB_NAME        = 'rubicam_db';
-const DB_USER        = 'rubicam_web';
-const DB_PASS        = 'CAMBIA_CLAVE_WEB';
-/* ==================================================================== */
+define('DB_HOST', env('DB_HOST', '127.0.0.1'));
+define('DB_NAME', env('DB_NOMBRE', 'rubicam_db'));
+define('DB_USER', env('DB_WEB_USUARIO', 'rubicam_web'));
+define('DB_PASS', env('DB_WEB_CLAVE', ''));
+/* ======================================================= */
 
 const TXT = [
     'es' => ['limite' => 'Has enviado muchos mensajes seguidos. Espera unos minutos o déjanos tus datos con «Hablar con un asesor».',
@@ -65,40 +71,14 @@ function responder(array $d, int $code = 200) {
     exit;
 }
 function fallo(string $msg, int $code = 200) { responder(['ok' => false, 'error' => $msg, 'respuesta' => $msg], $code); }
-function limpiar($s, int $max): string {
-    $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', ' ', (string)$s);
-    return trim(mb_substr((string)$s, 0, $max));
-}
-
-/* Límite por ventana, con archivo bloqueado (sin base de datos). Devuelve false si se excede. */
-function limitar(string $clave, int $max, int $ventana): bool {
-    if (!is_dir(CACHE_DIR)) {
-        @mkdir(CACHE_DIR, 0775, true);
-        @file_put_contents(CACHE_DIR . '/.htaccess', "Require all denied\n");
-    }
-    $f = fopen(CACHE_DIR . '/rl_' . md5($clave) . '.json', 'c+');
-    if (!$f) return true; // si no se puede limitar, no bloquear al visitante
-    flock($f, LOCK_EX);
-    $ahora = time();
-    $raw = stream_get_contents($f);
-    $arr = array_values(array_filter(json_decode($raw ?: '[]', true) ?: [], fn($x) => $x > $ahora - $ventana));
-    $ok = count($arr) < $max;
-    if ($ok) $arr[] = $ahora;
-    ftruncate($f, 0); rewind($f); fwrite($f, json_encode($arr));
-    flock($f, LOCK_UN); fclose($f);
-    return $ok;
-}
+function limitar(string $clave, int $max, int $ventana): bool { return limitar_en(CACHE_DIR, $clave, $max, $ventana); }
 
 /* ---------- Solo POST, solo desde el mismo sitio ---------- */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fallo('Método no permitido.', 405);
-$origen = $_SERVER['HTTP_ORIGIN'] ?? '';
-if ($origen !== '') {
-    $hostOrigen = parse_url($origen, PHP_URL_HOST) . (parse_url($origen, PHP_URL_PORT) ? ':' . parse_url($origen, PHP_URL_PORT) : '');
-    if (strcasecmp($hostOrigen, $_SERVER['HTTP_HOST'] ?? '') !== 0) fallo('Origen no permitido.', 403);
-}
+if (!origen_permitido($_SERVER['HTTP_ORIGIN'] ?? '', $_SERVER['HTTP_HOST'] ?? '')) fallo('Origen no permitido.', 403);
 $in = json_decode(file_get_contents('php://input'), true);
 if (!is_array($in)) fallo('Solicitud no válida.', 400);
-$IDIOMA = in_array($in['idioma'] ?? '', ['es', 'en', 'de'], true) ? $in['idioma'] : 'es';
+$IDIOMA = idioma_valido($in['idioma'] ?? '');
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 $accion = $_GET['accion'] ?? 'mensaje';
 
@@ -106,16 +86,10 @@ try {
     /* ======================= FORMULARIO DE CONTACTO ======================= */
     if ($accion === 'contacto') {
         if (!empty($in['web'])) responder(['ok' => true, 'respuesta' => t('ok')]);          // honeypot: los bots lo llenan
-        $nombre = limpiar($in['nombre'] ?? '', 100);
-        $email  = limpiar($in['email'] ?? '', 150);
-        $tel    = preg_replace('/[^0-9+() -]/', '', (string)($in['telefono'] ?? ''));
-        $tel    = substr($tel, 0, 30);
-        $emp    = limpiar($in['empresa'] ?? '', 150);
-        $msg    = limpiar($in['mensaje'] ?? '', 1000);
-        if (mb_strlen($nombre) < 2) fallo('nombre', 422);
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fallo('email', 422);
-        if (empty($in['acepto'])) fallo('acepto', 422);
-        $pagina = limpiar($in['pagina'] ?? '', 200);
+        $v = validar_contacto($in);
+        if ($v['error'] !== null) fallo($v['error'], 422);
+        ['nombre' => $nombre, 'email' => $email, 'telefono' => $tel, 'empresa' => $emp,
+         'mensaje' => $msg, 'pagina' => $pagina] = $v['datos'];
         // El límite se cuenta solo con formularios válidos (un error de tipeo no debe bloquear al visitante)
         if (!limitar("contacto|$ip", LIM_CONTACTO, 3600)) fallo(t('limite'), 429);
 
@@ -129,8 +103,7 @@ try {
                 $id = (int)$db->lastInsertId();
                 if (AVISO_EN_PANEL) {
                     // El aviso se muestra en el panel interno: se quitan <, >, comillas y comillas invertidas por seguridad (XSS).
-                    $seguro = fn(string $x): string => preg_replace('/[<>"`]/u', '', $x);
-                    $nombreA = $seguro($nombre); $empA = $seguro($emp);
+                    $nombreA = texto_seguro_aviso($nombre); $empA = texto_seguro_aviso($emp);
                     $db->prepare('INSERT INTO ws_avisos (id, texto, fijado, fecha, extra) VALUES (?,?,0,?,?)')->execute([
                         'web' . bin2hex(random_bytes(5)),
                         "📩 Nuevo contacto desde el sitio web: $nombreA" . ($empA ? " ($empA)" : '') . " · $email" . ($tel ? " · $tel" : ''),
@@ -156,20 +129,10 @@ try {
     if (!limitar("msg|$ip", LIM_MSG_IP, LIM_MSG_SEG) || !limitar("dia|$ip", LIM_DIA_IP, 86400)) fallo(t('limite'), 429);
     if (!limitar('global', LIM_DIA_TOTAL, 86400)) fallo(t('ocupado'), 429);
 
-    $historial = [];
-    foreach (array_slice((array)($in['historial'] ?? []), -MAX_HISTORIAL) as $m) {
-        if (!is_array($m) || !in_array($m['rol'] ?? '', ['user', 'assistant'], true)) continue;
-        $tx = limpiar($m['texto'] ?? '', MAX_MENSAJE);
-        if ($tx !== '') $historial[] = ['rol' => $m['rol'], 'texto' => $tx];
-    }
+    $historial = filtrar_historial($in['historial'] ?? [], MAX_HISTORIAL, MAX_MENSAJE);
 
     // Base de conocimiento: se ignoran las líneas pendientes "[COMPLETAR ...]" y los comentarios
-    $kb = '';
-    if (is_readable(KB_ARCHIVO)) {
-        $lineas = array_filter(preg_split('/\R/', file_get_contents(KB_ARCHIVO)),
-                               fn($l) => stripos($l, '[COMPLETAR') === false && !str_starts_with(ltrim($l), '>'));
-        $kb = mb_substr(trim(implode("\n", $lineas)), 0, 12000);
-    }
+    $kb = cargar_conocimiento(KB_ARCHIVO);
 
     $payload = json_encode(['mensaje' => $mensaje, 'historial' => $historial, 'idioma' => $IDIOMA,
                             'pagina' => limpiar($in['pagina'] ?? '', 200), 'conocimiento' => $kb],

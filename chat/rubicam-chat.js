@@ -10,7 +10,7 @@
   window.__rubicamChat = true;
 
   var script = document.currentScript || (function () { var s = document.getElementsByTagName('script'); return s[s.length - 1]; })();
-  var base = script && script.src ? script.src.replace(/[^\/]*$/, '') : '';
+  var base = script && script.src ? script.src.replace(/[^/]*$/, '') : '';
   var ENDPOINT = (script && script.getAttribute('data-endpoint')) || (base + 'chat-publico.php');
   var STORE = 'rubicam_chat_v1';
   var MAX_LEN = 600;
